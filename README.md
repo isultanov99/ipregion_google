@@ -1,131 +1,39 @@
-# ipregion
+# IPRegion for Google and YouTube
 
-A bash script for determining your IP geolocation using various GeoIP services and popular websites.  
-This is a **fork** of the [original script](https://github.com/vernette/ipregion/), with a number of improvements and fixes.
+A fork of [Davoyan/ipregion](https://github.com/Davoyan/ipregion) that checks which region Google and YouTube see for your connection.
+
+| Check | Result |
+| --- | --- |
+| Google | Region code from Google, with Google Play as a fallback |
+| Google Search Captcha | Whether Google Search returned a CAPTCHA or abuse warning |
+| YouTube | Region code from YouTube, with the Google result as a fallback |
+| YouTube Premium and Music | Whether each service reports a regional restriction |
+| YouTube CDN | Three-letter edge location code from Google Video |
 
 ## Usage
-Run script:
-```bash
-bash <(wget -qO- https://ipregion.xyz)
-```
-Or run **directly** from GitHub:
-```bash
-bash <(wget -qO- https://raw.githubusercontent.com/Davoyan/ipregion/main/ipregion.sh)
-```
 
+Download the script and run it with Bash.
 
-Output example:
+~~~bash
+curl -fsSLo ipregion.sh https://raw.githubusercontent.com/isultanov99/ipregion_google/main/ipregion.sh
+bash ipregion.sh
+~~~
 
-![image](https://i.imgur.com/Bn1o644.png)
+By default, the script runs all checks over IPv4 and includes IPv6 when it detects a global IPv6 address.
 
-## What's New in This Fork
+~~~bash
+bash ipregion.sh --group custom           # Google and YouTube, excluding CDN
+bash ipregion.sh --group cdn              # YouTube CDN only
+bash ipregion.sh --ipv4 --json            # IPv4 only, JSON output
+bash ipregion.sh --ipv6                   # IPv6 only
+bash ipregion.sh --proxy 127.0.0.1:1080   # SOCKS5 proxy
+bash ipregion.sh --interface eth1         # Bind to a network interface
+bash ipregion.sh --timeout 15 --verbose
+bash ipregion.sh --help
+~~~
 
-Compared to the original script, this fork includes several improvements and fixes:
+The script uses system DNS and sends its checks to Google, YouTube and Google Video endpoints. The JSON output retains the upstream fields for compatibility. The top-level external IP fields are null and the primary GeoIP group is empty.
 
-- **Improved IPv6 detection** — previously unreliable in some cases.  
-- **Fixed freezes** on certain services.  
-- **Adjusted output table alignment** for better readability.  
-- **Separated YouTube and Google checks** — sometimes show different regions.  
-- **Correct detection of Google China (CN) region**.  
-- **Added support for additional services**: 2ip.io, Youtube Music, Bing, and Amazon Prime.  
-- **ASN detection using MaxMind database** — same as [IPQuality](https://github.com/xykt/IPQuality/).  
-- **CDN services removed from the default group** — can be checked separately if needed.  
-- **Enhanced human-readable output** with country name decoding and percentage calculations.  
-- **Country names + percentage stats**: alongside ISO codes, shows country names and percentage distribution across services
-- **Fixed minor bugs**, e.g., inability to interrupt the script during execution.
+Requires Bash 4 or newer, curl, jq and column. Automatic IPv6 detection uses the ip command on Linux.
 
-## Main features
-
-- Checks your IP geolocation using multiple public GeoIP APIs
-- Results from both "primary" GeoIP services and popular web services (YouTube, Netflix, Twitch, etc.)
-- Supports both IPv4 and IPv6 (can test separately)
-- SOCKS5 proxy and custom network interface support
-- JSON output for automation and integration
-- Color-coded, easy-to-read table output
-
-## Dependencies
-
-- bash
-- curl
-- jq
-- util-linux or bsdmainutils (for `column`)
-
-## Country codes
-
-The script outputs country codes in ISO 3166-1 alpha-2 format (e.g., RU, US, DE).  
-In the **human-readable output**, the script also shows the **full country name** and **percentage distribution**.  
-
-For manual lookup of codes, you can use the official ISO website: [https://www.iso.org/obp/ui/#search/code/](https://www.iso.org/obp/ui/#search/code/)
-
-### Common use cases
-
-```bash
-# Show help message
-./ipregion.sh --help
-
-# Check all services with default settings
-./ipregion.sh
-
-# Check only GeoIP services
-./ipregion.sh --group primary
-
-# Check only CDN services
-./ipregion.sh --group cdn
-
-# Check only popular web services
-./ipregion.sh --group custom
-
-# Test only IPv4
-./ipregion.sh --ipv4
-
-# Test only IPv6
-./ipregion.sh --ipv6
-
-# Use SOCKS5 proxy
-./ipregion.sh --proxy 127.0.0.1:1080
-
-# Use a specific network interface
-./ipregion.sh --interface eth1
-
-# Set custom curl request timeout in seconds
-./ipregion.sh --timeout 20
-
-# Output result as JSON
-./ipregion.sh --json
-
-# Enable verbose logging
-./ipregion.sh --verbose
-```
-
-All options available in the help message (`-h, --help`) can be used and combined.
-
-## Options
-
-```
-Usage: ipregion.sh [OPTIONS]
-
-IPRegion — determines your IP geolocation using various GeoIP services and popular websites
-
-Options:
-  -h, --help           Show this help message and exit
-  -v, --verbose        Enable verbose logging
-  -j, --json           Output results in JSON format
-  -g, --group GROUP    Run only one group: 'primary', 'custom', 'cdn' or 'all' (default: all)
-  -t, --timeout SEC    Set curl request timeout in seconds (default: 6)
-  -4, --ipv4           Test only IPv4
-  -6, --ipv6           Test only IPv6
-  -p, --proxy ADDR     Use SOCKS5 proxy (format: host:port)
-  -i, --interface IF   Use specified network interface (e.g. eth1)
-
-Examples:
-  ipregion.sh                       # Check all services with default settings
-  ipregion.sh -g primary            # Check only GeoIP services
-  ipregion.sh -g custom             # Check only popular websites
-  ipregion.sh -g cdn                # Check only CDN
-  ipregion.sh -4                    # Test only IPv4
-  ipregion.sh -6                    # Test only IPv6
-  ipregion.sh -p 127.0.0.1:1080     # Use SOCKS5 proxy
-  ipregion.sh -i eth1               # Use network interface eth1
-  ipregion.sh -j                    # Output result as JSON
-  ipregion.sh -v                    # Enable verbose logging
-```
+Licensed under the [MIT License](LICENSE).
